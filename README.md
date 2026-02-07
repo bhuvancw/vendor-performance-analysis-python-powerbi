@@ -77,66 +77,72 @@ Creates vendor_sales_summary through multi-step process:
 2. **Product Pricing Optimization** - Compare purchase vs actual selling prices
 3. **Inventory Management** - Monitor stock turnover rates by vendor and product
 4. **Performance Benchmarking** - Analyze sales-to-purchase ratios across vendors
+# vendor-performance-analysis-python-powerbi
+
+## Project overview
+
+This repository contains a small Python pipeline to ingest raw CSV data into a local SQLite database and produce an aggregated vendor performance table used for reporting and Power BI visualization.
+
+Work done here is focused on data ingestion and creating the `vendor_sales_summary` table with derived performance metrics.
+
+## Files
+
+- `ingestion_db.py` — Ingests all `.csv` files from the current working directory into `inventory.db`. Use `python ingestion_db.py` to run; logs are written to the `logs` folder.
+- `get_vendor_summary.py` — Builds the `vendor_sales_summary` table by joining `purchases`, `purchase_prices`, `sales`, and `vendor_invoice`, performs cleaning and derives metrics, then writes the result into the database.
+- `Exploratory Data Analysis.ipynb`, `Ingestion_DB.ipynb`, `Vendor Performance Analysis.ipynb` — exploration and analysis notebooks (not covered here).
+
+## How it works (short)
+
+1. Run `python ingestion_db.py` to load CSV files into `inventory.db` (each CSV becomes a table).
+2. Run `python get_vendor_summary.py` to create `vendor_sales_summary` in the same database. This script:
+   - Aggregates freight cost by vendor
+   - Aggregates purchases and joins to `purchase_prices`
+   - Aggregates sales by vendor and brand
+   - Joins the above to create a summary table
+   - Cleans data and computes derived metrics such as `GrossProfit`, `ProfitMargin %`, `StockTurnover`, and `SalestoPurchaseRatio`
 
 ## Requirements
 
-- Python 3.x
+- Python 3.8+
 - pandas
-- numpy
-- sqlite3
 - sqlalchemy
-- Power BI Desktop
+- sqlite3 (builtin)
 
-## Usage
+Install Python packages:
 
-1. **Load Raw Data:**
-   ```python
-   python ingestion_db.py
-   ```
-   Ingests all CSV files into inventory.db
-
-2. **Generate Vendor Summary:**
-   ```python
-   python get_vendor_summary.py
-   ```
-   Creates aggregated vendor_sales_summary table with metrics
-
-3. **Visualize Results:**
-   - Open Vendor Performance Analysis Dashboard.pbix in Power BI
-   - Connect to inventory.db
-   - Explore vendor performance metrics
-
-## Key Statistics
-
-- **126 Active Vendors** in the system
-- **10,692 Vendor-Brand Combinations** analyzed
-- **12.8M+ Sales Transactions** processed
-- **2.4M+ Purchase Transactions** analyzed
-- **Profit Range:** -$52,002 to +$1,290,667
-- **Profit Margin Range:** -100% to +99%
-
-## Performance Insights
-
-Top vendors by profit contribution include:
-- BROWN-FORMAN CORP
-- MARTIGNETTI COMPANIES
-- PERNOD RICARD USA
-- DIAGEO NORTH AMERICA INC
-
-## Database Relationships
-
-```
-purchases + purchase_prices --> purchase_summary (by vendor, brand)
-sales --> sales_summary (by vendor, brand)
-vendor_invoice --> freight_summary (by vendor)
-
-[All tables] --> vendor_sales_summary (comprehensive metrics)
+```powershell
+pip install pandas sqlalchemy
 ```
 
-## Notes
+## Notes and important details
 
-- All monetary values in dollars
-- Dates tracked for transactions (2024 data)
-- Excise tax calculated for alcoholic beverages
-- Data includes multiple store locations
-- Volume measured in mL for consistency
+- `ingestion_db.py` uses SQLAlchemy's `create_engine('sqlite:///inventory.db')` and writes DataFrames with `to_sql`.
+- `get_vendor_summary.py` opens a `sqlite3` connection to `inventory.db` and executes SQL to build the summary. It then calls the ingestion helper to write `vendor_sales_summary` back to the DB.
+- Ensure you run scripts from the project root so relative paths (for CSV discovery and `inventory.db`) resolve correctly.
+- Logs are written to the `logs` directory; create it if missing.
+
+## Running
+
+1. From the project root, ingest CSVs:
+
+```powershell
+python ingestion_db.py
+```
+
+2. Build the vendor summary:
+
+```powershell
+python get_vendor_summary.py
+```
+
+3. Open your Power BI file and connect to `inventory.db` to visualize `vendor_sales_summary`.
+
+## Quick checklist
+
+- [ ] Place CSV files in the project root
+- [ ] Confirm `logs` directory exists
+- [ ] Run ingestion, then summary generation
+
+If you want, I can also:
+- add a `requirements.txt` and a simple script to create the `logs` folder automatically
+- run the scripts here and verify the DB is created (if you want me to proceed, tell me to run them)
