@@ -77,6 +77,3 @@ Creates vendor_sales_summary through multi-step process:
 2. **Product Pricing Optimization** - Compare purchase vs actual selling prices
 3. **Inventory Management** - Monitor stock turnover rates by vendor and product
 4. **Performance Benchmarking** - Analyze sales-to-purchase ratios across vendors
-If you want, I can also:
-- add a `requirements.txt` and a simple script to create the `logs` folder automatically
-- run the scripts here and verify the DB is created (if you want me to proceed, tell me to run them)
